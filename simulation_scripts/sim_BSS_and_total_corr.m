@@ -1,55 +1,16 @@
-% Este é um código inspirado no supercomparativo.m do prof. Daniel Guerreiro.
-% 17/04/2019
-
-% 16/09/2019
-% Este codigo recebeu um refatoramento, tal como o codigo
-% runs_sim_bss_and_total_corr_17_04_2019_diff2_setup1
-
 % 04/08/2020
 % Este código é uma refatoração completa do depreciado.
 
-% transformaremos este código num script_File
+% Esta linha indica que é um script-file
 1;
 
 function bss_and_total_corr_simulation(some_primes,n_sources,n_samples,n_trials,KLD_thresh)
 	sim_start_time = localtime(time());
 
-	% PLEASE, UNCOMMENT THE NAME AT THE END for each
-	% DIFFERENT SETUP.
-	% setup1
-	%some_primes = [2,3,5,7];
-	%n_sources = [2,3,4,5];
-
-	% diff_setup1 part1
-	% we have left to the others part to just p=5 and these sources.
-	%some_primes = [2,3];
-	%n_sources = [6,7];
-
-	% diff_setup1 part2
-	% just P=5 and K=6
-	%some_primes = [5];
-	%n_sources = [6];
-
-	% diff_setup1 part3
-	% just P=5 and K=7
-	%some_primes = [5];
-	%n_sources = [7];
-
-
-	% diff2_setup1
-	% some_primes = [2,3];
-	% n_sources = [8];
-
-
-
-	%n_samples = [2^8,2^9,2^10,2^11,2^12];
-
 	% Must be a cel array, so we can do a strfind...
 	algorithms_names = {'america';'sa4ica';'GLICA'}
 
 	the_algorithms = 1:length(algorithms_names);
-
-	%n_trials = 50;
 
 	space = [ length(some_primes), length(n_sources), length(n_samples),...
 	 length(the_algorithms) n_trials ];
@@ -65,7 +26,6 @@ function bss_and_total_corr_simulation(some_primes,n_sources,n_samples,n_trials,
 	% this threshold is such that
 	% there is a gap of "threshold" in the kullback-leibler divergence
 	% it is because uniform distributions are unsolvable.
-	%threshold = 0.2;
 	threshold = KLD_thresh;
 
 	total_time = tic;
@@ -288,23 +248,11 @@ function bss_and_total_corr_simulation(some_primes,n_sources,n_samples,n_trials,
 	% start and ending times
 	start_time_str = strftime('sim_data_start_%d_%m_%Y_%H_%M',sim_start_time);
 
-	% setup1
-	%saved_sim_str = strftime('_end_%d_%m_%Y_%H_%M_sim_bss_and_total_corr_17_04_2019',localtime(time()));
-
-	%diff_setup1 part1
-	%saved_sim_str = strftime('_end_%d_%m_%Y_%H_%M_sim_bss_and_total_corr_17_04_2019_diff_setup1_part1',localtime(time()));
-
-	%diff_setup1 part2
-	%saved_sim_str = strftime('_end_%d_%m_%Y_%H_%M_sim_bss_and_total_corr_17_04_2019_diff_setup1_part2',localtime(time()));
-
 	%diff_setup1 part3
-	saved_sim_str = strftime('_end_%d_%m_%Y_%H_%M_sim_bss_and_total_corr_17_04_2019_diff_setup1_part3',localtime(time()));
-
-	%diff2_setup1
-	% saved_sim_str = strftime("_end_%d_%m_%Y_%H_%M_sim_bss_and_total_corr_17_04_2019_diff2_setup1",localtime(time()));
+	saved_sim_str = strftime('_end_%d_%m_%Y_%H_%M_sim_BSS_and_total_corr',localtime(time()));
 
 
-	saved_sim = sprintf('%s%s',start_time_str,saved_sim_str);
+	saved_sim = sprintf('sim_data/%s%s',start_time_str,saved_sim_str);
 	save(saved_sim)
 end
 
