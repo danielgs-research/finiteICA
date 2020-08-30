@@ -9,7 +9,62 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%% FUNCTIONS IN THIS FILE:
 
+% decode_ -- used in sa4ica_decode
+
+% sa4ica_decode -- the sa4ica algorithm itself
+
+% QICA_function -- QICA algorithm, made by Painsky's et al.
+
+% produtomatrizGF -- utils function
+
+% OD_search -- utils used in Painsky's et al functions
+
+% mapeiapermutacao -- util function which does maps the permutation 
+%   -- needs a better explanation, can't remember
+
+% mapeiainteiro_to_tuple -- maps an integer form column_wise_matrix to a tuple
+%   -- seems to have something wrong here
+
+% is_linear_comb -- check if's is a linear combination from the giving matrix
+%   -- not being used explicitly, may need to be incorpored in GLICA_function
+
+% GLICA_function -- GLICA's Painsky's et al algorithm
+
+% geravetorsinais -- utils which generate the signal given parameters
+
+% geramatrizmistura -- generates a mixing matrix
+
+% gerainteiros_from_probs -- generates integers given probabilities
+
+% generate_random_pmf -- generates a random pmf, used in joint_pmf to ICA experiments
+
+% add_to_counter -- utils for generate_pai_P
+
+% generate_pai_P -- ??
+%    -- don't remember what it does, but it's related to all possible tuples
+
+% generate_pai -- similar to pai_P, but restricted to base 2
+
+% estimate_marg_probs -- estimates marginal probs from the observations
+
+% entropy_from_frequencies -- calculates entropy given frequencies
+
+% calc_k_params -- utils for QICA_function or BICA_function
+
+% add_to_counter_v2 -- renaming for add_to_counter, used in some of the
+% BICA_function or QICA_function, made by Painsky's et al
+
+% calc_k_params_P -- utils for QICA_function or BICA_function
+
+% allVL1nonrecurs -- utils for BICA_function and/or QICA_function
+
+% BICA_function -- the BICA algorithm by Painsky's et al
+
+% assing_slopes -- utils for BICA_function and/or QICA_function
+
+% america -- AMERICA algorithm (Yeredor)
 
 
 function [h,PPy] = decode_(W,PPx,parameters)
