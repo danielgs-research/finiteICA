@@ -1215,3 +1215,38 @@ function B=america(PPx,param)
 
 	B=B';
 end;
+
+pkg load linear-algebra
+function new_pmf_conj = order_permutation_algorithm(pmf_conj)
+    line_pmf_conj = pmf_conj(:)
+    [line_pmf_conj, indices] = sort(line_pmf_conj)
+
+    ndimensions = ndims(pmf_conj)
+    new_pmf_conj = zeros(size(pmf_conj))
+
+    % NO PYTHON:
+    % for index,p in enumerate(product(range(pmf_conj.shape[0]),repeat=ndim)):
+    %   new_pmf_conj[p] = line_pmf_conj[index]
+    % iterar sob o produto cartesiano.
+    % pmf_conj.shape[0] é size(pmf_conj)(0), aqui.
+    % para um pmf_conj de shape/size 2 2 2
+
+    % queríamos iterar sobre o produto cartesiano de [1 2] x [1 2] x [1 2]
+    % que nos daria, primeiro:
+    %  1 1
+    %  1 2
+    %  2 1
+    %  2 2
+
+    % depois 
+    % 1 1 1
+    % 1 1 2
+    % etc
+
+    % o problema aqui, é que o octave só aceita como cartprod(arg1,arg2...)
+    % e não como um argumento só, que é uma lista.
+
+    % então devemos rodar alguma espécie de loop. no momento não consigo fazer.
+    % TODO!!!
+
+end
