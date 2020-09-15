@@ -1224,7 +1224,7 @@ function new_pmf_conj = order_permutation_algorithm(pmf_conj)
     ndimensions = ndims(pmf_conj)
     new_pmf_conj = zeros(size(pmf_conj))
 
-    % NO PYTHON:
+    % NO PYTHON: Checar o BSS_functions.py!
     % for index,p in enumerate(product(range(pmf_conj.shape[0]),repeat=ndim)):
     %   new_pmf_conj[p] = line_pmf_conj[index]
     % iterar sob o produto cartesiano.
