@@ -11,13 +11,14 @@
 some_primes = [2];
 n_sources = 3;
 n_samples = 512;
-n_trials = 10;
+n_trials = 2;
 qica_min_k = 4;
 qica_max_k = 8;
-%the_distribution = 
+%the_distribution =
 
 addpath('aux_functions/');
-sim_start_time = datetime();
+% sim_start_time = datetime(); %MATLAB
+sim_start_time = localtime(time()); %OCTAVE
 
 % Must be a cel array, so we can do a strfind...
 algorithms_names = {'america';'sa4ica';'QICA';'GLICA'};
@@ -73,7 +74,7 @@ for p_i = 1:length(some_primes)
 
                 %First we are going Zipf like Painsky's code
                 q=P;
-                n=K; %dimension of the random vector 
+                n=K; %dimension of the random vector
                 %Zipf distribution
                 s=1.05; %zipf distribution parameter
                 zipf_p=[1:1:q^n];
@@ -111,7 +112,7 @@ for p_i = 1:length(some_primes)
                 idx=r*X;
                 Px = single(zeros(1,PK));
                 for t=1:Nobs
-                    Px(idx(t)+1) = Px(idx(t)+1) + 1; 
+                    Px(idx(t)+1) = Px(idx(t)+1) + 1;
                 end
 
                 Px=Px/Nobs;
@@ -140,18 +141,18 @@ for p_i = 1:length(some_primes)
 %		        U = produtomatrizGF(Wm,A,P,1,[]);
 %                U_america = U
 
-                % there's some legacy code happening here, we'll leave it here. 
+                % there's some legacy code happening here, we'll leave it here.
                 % it resembles supercomparativo.m code
 %		        if(1>1)
-%		            Z = (U>-1); %null element in GF(P^1) 
+%		            Z = (U>-1); %null element in GF(P^1)
 %		        else
-%		            Z = (U>0); 
+%		            Z = (U>0);
 %		        end
 
-%		        hits = sum(sum(Z,2)==1);    
-%		        if(hits == K)  
+%		        hits = sum(sum(Z,2)==1);
+%		        if(hits == K)
 %		        	bss_succ_rate(p_i,k_i,t_i,algo_i) += 1;
-%		        end 
+%		        end
 
                 Y = produtomatrizGF(Wm,X,P,1,[]);
 %                Y_possible_tuples_america = produtomatrizGF(U_america,all_possible_tuples,P,1,[])
@@ -181,15 +182,15 @@ for p_i = 1:length(some_primes)
 %                Usa4ica = U
 
 %		        if(1>1)
-%		            Z = (U>-1); %null element in GF(q^m) 
+%		            Z = (U>-1); %null element in GF(q^m)
 %		        else
-%		            Z = (U>0); 
+%		            Z = (U>0);
 %		        end
 
-%		        hits = sum(sum(Z,2)==1);    
-%		        if(hits == K)  
+%		        hits = sum(sum(Z,2)==1);
+%		        if(hits == K)
 %		        	bss_succ_rate(p_i,k_i,t_i,algo_i) += 1;
-%		        end 
+%		        end
 
                 Y = produtomatrizGF(Wsa,X,P,1,[]);
 %                Y_possible_tuples_sa4ica = produtomatrizGF(Usa4ica,all_possible_tuples,P,1,[])
@@ -210,7 +211,7 @@ for p_i = 1:length(some_primes)
 
                 [opt_est_vals,opt_appox_lin_min2,opt_appox_ent_with_appox_vals2,opt_perm,opt_v_vec]=QICA_function(K,P,Px',0,qica_min_k,qica_max_k,1000);
 % %                opt_perm
- %		        [opt_p,opt_perm,est_vals,marginals_after]=BICA_function(Px',4,10);                          
+ %		        [opt_p,opt_perm,est_vals,marginals_after]=BICA_function(Px',4,10);
 % %                opt_perm'
 
 
@@ -221,7 +222,7 @@ for p_i = 1:length(some_primes)
                 [Yqica,] = mapeiapermutacao([], X, opt_perm,P,K);
 %                 Y_possible_tuples_qica
 
-% 		        if(maxhit == K)  
+% 		        if(maxhit == K)
 % 		        	bss_succ_rate(p_i,k_i,t_i,algo_i) += 1;
 % 		        end
 
@@ -248,15 +249,15 @@ for p_i = 1:length(some_primes)
 %                Uglica = U
 
 %		        if(1>1)
-%		            Z = (U>-1); %null element in GF(q^m) 
+%		            Z = (U>-1); %null element in GF(q^m)
 %		        else
-%		            Z = (U>0); 
+%		            Z = (U>0);
 %		        end
 
-%		        hits = sum(sum(Z,2)==1);    
-%		        if(hits == K)  
+%		        hits = sum(sum(Z,2)==1);
+%		        if(hits == K)
 %		        	bss_succ_rate(p_i,k_i,t_i,algo_i) += 1;
-%		        end 
+%		        end
 
 
 
@@ -278,11 +279,12 @@ mean_trial_time = mean(trial_time, 5);
 mean_total_corr_results = mean(total_corr_results, 5);
 
 
-% saves with the date (day/month/year) and the hour: hh:mm 
+% saves with the date (day/month/year) and the hour: hh:mm
 % start and ending times
-start_time_str = 'sim_data_start_' + string(sim_start_time,'yyyy_MM_dd_HH:mm');
+start_time_str = strftime('sim_data_start_%d_%m_%Y_%H_%M',sim_start_time);%OCTAVE
+saved_sim_str = strftime('_end_%d_%m_%Y_%H_%M_sim_total_corr_pure_ICA',localtime(time()));%OCTAVE
+% start_time_str = 'sim_data_start_' + string(sim_start_time,'yyyy_MM_dd_HH:mm'); %MATLAB
+% saved_sim_str = '_end_' + string(datetime(),'yyyy_MM_dd_HH:mm') + '_sim_total_corr_pure_ICA';%MATLAB
 
-saved_sim_str = '_end_' + string(datetime(),'yyyy_MM_dd_HH:mm') + '_sim_total_corr_pure_ICA';
-
-saved_sim = sprintf("sim_data/%s%s",start_time_str,saved_sim_str);
+saved_sim = sprintf('sim_data/%s%s',start_time_str,saved_sim_str);
 save(saved_sim)
