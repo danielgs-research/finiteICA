@@ -10,8 +10,8 @@
 %% By now it englobes just the pure_zipf experiment
 some_primes = [2];
 n_sources = 3;
-n_samples = 512;
-n_trials = 2;
+n_samples = [128, 256, 512, 1024];
+n_trials = 10;
 qica_min_k = 4;
 qica_max_k = 8;
 %the_distribution =
@@ -21,7 +21,7 @@ addpath('aux_functions/');
 sim_start_time = localtime(time()); %OCTAVE
 
 % Must be a cel array, so we can do a strfind...
-algorithms_names = {'america';'sa4ica';'QICA';'GLICA'};
+algorithms_names = {'america';'sa4ica';'QICA';'GLICA';'order'};
 
 the_algorithms = 1:length(algorithms_names);
 
@@ -210,29 +210,34 @@ for p_i = 1:length(some_primes)
 
 
                 [opt_est_vals,opt_appox_lin_min2,opt_appox_ent_with_appox_vals2,opt_perm,opt_v_vec]=QICA_function(K,P,Px',0,qica_min_k,qica_max_k,1000);
-% %                opt_perm
- %		        [opt_p,opt_perm,est_vals,marginals_after]=BICA_function(Px',4,10);
-% %                opt_perm'
 
 
                 trial_time(p_i,k_i,t_i,algo_i,trial) = toc(start_time);
-                %The below line was meant for testing.
-%                toc(start_time);
 
                 [Yqica,] = mapeiapermutacao([], X, opt_perm,P,K);
-%                 Y_possible_tuples_qica
-
-% 		        if(maxhit == K)
-% 		        	bss_succ_rate(p_i,k_i,t_i,algo_i) += 1;
-% 		        end
-
-
-          %       fprintf('maxhit is %d where K = %d\n',maxhit,K);
 
                  h_marg=entropy_from_frequencies(estimate_marg_probs(Yqica,P)');
                  h_marg = sum(h_marg(:));
 
                  total_corr_results(p_i,k_i,t_i,algo_i,trial) = h_marg-h_joint;
+
+                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                 %%%%%  Order Permutation ALGORITHM EVALUATION  %%%%%
+                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+                 algo_i = find(strcmp(algorithms_names,'order'));
+
+                 start_time = tic;
+
+                 [Yorder, opt_perm] = order_perm_function(Px,X,P,K);
+
+                 trial_time(p_i,k_i,t_i,algo_i,trial) = toc(start_time);
+
+                 h_marg=entropy_from_frequencies(estimate_marg_probs(Yorder,P)');
+                 h_marg = sum(h_marg(:));
+
+                 total_corr_results(p_i,k_i,t_i,algo_i,trial) = h_marg-h_joint;
+
 
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 %%%%%  GLICA ALGORITHM EVALUATION  %%%%
@@ -244,25 +249,7 @@ for p_i = 1:length(some_primes)
                 [Wglica] = GLICA_function(X,parameters);
                 trial_time(p_i,k_i,t_i,algo_i,trial) = toc(start_time);
 
-                %once again, we are going to test the number of hits
-%		        U = produtomatrizGF(Wglica,A,P,1,[]);
-%                Uglica = U
-
-%		        if(1>1)
-%		            Z = (U>-1); %null element in GF(q^m)
-%		        else
-%		            Z = (U>0);
-%		        end
-
-%		        hits = sum(sum(Z,2)==1);
-%		        if(hits == K)
-%		        	bss_succ_rate(p_i,k_i,t_i,algo_i) += 1;
-%		        end
-
-
-
                 Y = produtomatrizGF(Wglica,X,P,1,[]);
-%                Y_possible_tuples_glica = produtomatrizGF(Uglica,all_possible_tuples,P,1,[])
                 h_marg=entropy_from_frequencies(estimate_marg_probs(Y,P)');
                 h_marg = sum(h_marg(:));
                 total_corr_results(p_i,k_i,t_i,algo_i,trial) = h_marg-h_joint;
@@ -285,6 +272,8 @@ start_time_str = strftime('sim_data_start_%d_%m_%Y_%H_%M',sim_start_time);%OCTAV
 saved_sim_str = strftime('_end_%d_%m_%Y_%H_%M_sim_total_corr_pure_ICA',localtime(time()));%OCTAVE
 % start_time_str = 'sim_data_start_' + string(sim_start_time,'yyyy_MM_dd_HH:mm'); %MATLAB
 % saved_sim_str = '_end_' + string(datetime(),'yyyy_MM_dd_HH:mm') + '_sim_total_corr_pure_ICA';%MATLAB
+
+%plot(1:4,ans(1,1,:,1),1:4,ans(1,1,:,2),1:4,ans(1,1,:,3),1:4,ans(1,1,:,4),1:4,ans(1,1,:,5));legend('america','sa4ica','QICA','GLICA','order');
 
 saved_sim = sprintf('sim_data/%s%s',start_time_str,saved_sim_str);
 save(saved_sim)
