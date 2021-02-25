@@ -1,4 +1,4 @@
-function W = GLICA_function(X,param)
+function W = GLICA_function(X,P,K)
 	% this fuction seems really closer to america
 	% and was created by Painsky et.al
 	% We'll do an implementation accordingly to
@@ -8,10 +8,6 @@ function W = GLICA_function(X,param)
 
 	% X is the observations matrix. which is K x Nobs
 	% output: the separation matrix W
-
-	P = param.P;
-	K = param.K;
-	PK = param.PK;
 
 	% Nothing is said about Lex in Painsky's work
 	% Lex = param.Lex;
@@ -42,13 +38,15 @@ function W = GLICA_function(X,param)
     while k<=K
 
         if isempty(W)
-                W = [ vT_matrix(U_entropies_sorted_index,:)(index_entropy,:)];
-                index_entropy += 1;
-                k+=1;
+                tmp = vT_matrix(U_entropies_sorted_index,:);
+                W =  tmp(index_entropy,:);
+                index_entropy = index_entropy + 1;
+                k= k + 1;
                 continue;
         end
 
-        row_candidate = vT_matrix(U_entropies_sorted_index,:)(index_entropy,:);
+        tmp = vT_matrix(U_entropies_sorted_index,:);
+        row_candidate = tmp(index_entropy,:);
 
         % checks if the row candidate is a combination of pre-existing lines
         existing_lines = size(W,1);
@@ -63,9 +61,9 @@ function W = GLICA_function(X,param)
         % of the existing rows in W... add it to the W matrix
         if(~ any(sum(abs(mod(vT_matrix_view * W,P) - row_candidate),2) ==0) )
             W = [W ; row_candidate];
-            k+=1;
+            k = k + 1;
         end
-        index_entropy+=1;
+        index_entropy= index_entropy + 1;
 
     end
 

@@ -1,19 +1,11 @@
 % There's a cleaner function reading of AMERICA, but we'll
 % put it here later (31/07/2020)
 
-function B=america(PPx,param)
+function B=america(PPx,P,K,PK,Lex,r)
 	%The Ascending Minimization of EntRopies for ICA
 	%(AMERICA) algorithm
 	%input: PPx - the (estimated) probabilities tensor
 	%output: B - the estimated separating matrix
-
-	% global P K PK r Lex
-
-	P = param.P;
-	K = param.K;
-	PK = param.PK;
-	Lex = param.Lex;
-	r = param.r;
 
 	eqeps=1e-9; %a threshold for deciding
 	            %equal entropies
@@ -84,4 +76,4 @@ function B=america(PPx,param)
 	end
 
 	B=B';
-end;
+end

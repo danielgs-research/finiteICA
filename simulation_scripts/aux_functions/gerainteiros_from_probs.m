@@ -6,8 +6,6 @@ function [S] = gerainteiros_from_probs(probs,P,K,Nobs)
     % K is the number of sources
     % Nobs = the number of signals to be generated
 
-    % probs = zeros(P,K);
-
     full_size = P^K;
 
     assert(size(probs,2) == full_size);    
@@ -17,8 +15,9 @@ function [S] = gerainteiros_from_probs(probs,P,K,Nobs)
     % generating the samples here
 
 
-    range_of_values = 1:full_size;
-    S = discrete_rnd(range_of_values,probs,Nobs,1);
+%     range_of_values = 1:full_size; %OCTAVE
+%     S = discrete_rnd(range_of_values,probs,Nobs,1); %OCTAVE
+    S = gendist(probs,Nobs,1); %MATLAB
 
 
 end

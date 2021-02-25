@@ -1,4 +1,4 @@
-function [B] = sa4ica_decode(Px,parameters,beta,k)
+function [B] = sa4ica_decode(Px,P,K,Lex,r,beta,k)
 	%SA4ICA Probabilities Tensor version - Prime fields only!
 	%Good for large number of samples - 2^11 or larger!!!
 	% global count;
@@ -6,13 +6,13 @@ function [B] = sa4ica_decode(Px,parameters,beta,k)
 	% histH = [];
 	epsilon = 1e-3;
 
-	N = parameters.K;
-	q = parameters.P;
+	N = K;
+	q = P;
 	% Nfits = 0;
 	%flag_parada = 0;
 	%Ntotal_comb = 0;
 	B = eye(N,N); %initial solution
-	[h, ~] = decode_(eye(N),Px,parameters); %initial entropies
+	[h, ~] = decode_(eye(N),Px,r,P,K,Lex); %initial entropies
 	% if m > 1
 	%     B = B - 1;
 	% end
@@ -35,7 +35,7 @@ function [B] = sa4ica_decode(Px,parameters,beta,k)
 	        V(i,j) = c;  %switch Xi by the combination Xi + c.Xj
 
 	%         Xnew = produtomatrizGF(V, X, q, m, field);
-	        [hnew, Pxnew] = decode_(V, Px, parameters);
+	        [hnew, Pxnew] = decode_(V, Px, r,P,K,Lex);
 	        hnew = hnew(i);
 	%         H = entrp([combined_signal; X(i,:)],q,m);
 	%         [hnew, count] = entrp(Xnew(i,:),q,m);
@@ -57,15 +57,10 @@ function [B] = sa4ica_decode(Px,parameters,beta,k)
 end
 
 
-function [h,PPy] = decode_(W,PPx,parameters)
+function [h,PPy] = decode_(W,PPx,r,q,K,lex)
 	% decode function for sa4ica
 	%PPx: probabilities tensor
-    PPy = PPx;
-    r = parameters.r;
-    q = parameters.P;
-    K = parameters.K;
-    lex = parameters.Lex;
-    % global r q K lex;
+    PPy = PPx;    
     % K = length(W);
     lg_cte = log2(q); %correction factor to calculate always logP entropies
     % r=q.^(0:K-1);
