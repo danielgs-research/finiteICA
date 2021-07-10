@@ -1,16 +1,13 @@
-% This code is greatly inspired in Painsky's code of QICA.m
-% not QICA_function.m !
-% This is the pure Zipf pmf simulation.
 clear;
-close;
-%% By now it englobes just the pure_zipf experiment
+close all;
+
 some_primes = [3];
-n_sources = 3;
-n_samples = 2.^[7:20];
+n_sources = [2 4 6];
+n_samples = 10.^(2:6);
 n_trials = 50;
-qica_min_k = 4;
-qica_max_k = 8;
-%the_distribution =
+qica_min_k = 2;
+qica_max_k = 10;
+sig_digits = 4;
 
 addpath('aux_functions/');
 if isempty(gcp('nocreate')) %MATLAB
@@ -21,31 +18,44 @@ sim_start_time = datetime(); %MATLAB
 
 % Must be a cel array, so we can do a strfind...
 algorithms_names = {'america';'sa4ica';'QICA';'GLICA';'order'};
+n_algorithms = length(algorithms_names);
+the_algorithms = 1:n_algorithms;
 
-the_algorithms = 1:length(algorithms_names);
+% distributions_names = {'Zipf';'Binomial p=0.2';'Binomial p=0.5';'Random'};
+distributions_names = {'Zipf', 'Binomial p=0.2', 'Random'};
+the_distributions = 1:length(distributions_names);
 
 
-space = [length(algorithms_names) length(some_primes), length(n_sources), length(n_samples), n_trials];
+space = [length(distributions_names), length(some_primes), length(n_sources), length(n_samples), n_trials];
 
-n_cases = prod(space);
+n_cases = prod(space); %number of tested scenarios per algorithm
 
-trial_time = zeros(n_cases,1);
+america_trial_time = zeros(n_cases,1);
+america_total_corr_results = zeros(n_cases,1);
 
-total_corr_results = zeros(n_cases,1);
+sa4ica_trial_time = zeros(n_cases,1);
+sa4ica_total_corr_results = zeros(n_cases,1);
+
+QICA_trial_time = zeros(n_cases,1);
+QICA_total_corr_results = zeros(n_cases,1);
+
+GLICA_trial_time = zeros(n_cases,1);
+GLICA_total_corr_results = zeros(n_cases,1);
+
+order_trial_time = zeros(n_cases,1);
+order_total_corr_results = zeros(n_cases,1);
 
 total_time = tic;
+% s = RandStream('mt19937ar','Seed',trial_i);
 
 parfor idcase = 1:n_cases    
-    [algo_i, p_i, k_i, t_i, trial_i] = ind2sub(space,idcase);
+    [dist_i, p_i, k_i, t_i, trial_i] = ind2sub(space,idcase);
     P = some_primes(p_i);
     K = n_sources(k_i);
     Nobs = n_samples(t_i);
-    s = RandStream('mt19937ar','Seed',trial_i);
     
     PK = P^K;
-    %%%%%%% from super_comparativo.m %%%%%%
-    %% Which was directly extracted from america code
-    %% itself
+    %% Directly extracted from america code
 
     % construct a "Lexicon": Lex(:,n) is the (n-1)-th
     Lex=single(zeros(K,PK));
@@ -59,150 +69,130 @@ parfor idcase = 1:n_cases
     r=P.^(0:K-1); %AMERICA parameter
 
 
-
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    %First we are going Zipf like Painsky's code
-    q=P;
-    n=K; %dimension of the random vector
-    %Zipf distribution
-    s=1.05; %zipf distribution parameter
-    zipf_p=[1:1:q^n];
-    zipf_p=1./(zipf_p.^s);
-    zipf_p=zipf_p'/sum(zipf_p);
+    if(dist_i == find(strcmp(distributions_names,'Zipf')))
+        %First we are going Zipf like Painsky's code
+        %Zipf distribution
+        s=1.05; %zipf distribution parameter
+        zipf_p=[1:1:PK];
+        zipf_p=1./(zipf_p.^s);
+        zipf_p=zipf_p'/sum(zipf_p);
+        joint_pmf  = zipf_p';
+        generated_integers = gerainteiros_from_probs(joint_pmf,P,K,Nobs);
+    elseif(dist_i == find(strcmp(distributions_names,'Binomial p=0.2')))
+        generated_integers = binornd(PK-1,.2,Nobs,1)+1;
+    elseif(dist_i == find(strcmp(distributions_names,'Binomial p=0.5')))
+        generated_integers = binornd(PK-1,.5,Nobs,1)+1;
+    elseif(dist_i == find(strcmp(distributions_names,'Random')))
+        joint_pmf  = single(generate_random_pmf(PK)');
+        generated_integers = gerainteiros_from_probs(joint_pmf,P,K,Nobs);
+    end
 
-    joint_pmf  = zipf_p';
-
-    generated_integers = gerainteiros_from_probs(joint_pmf,P,K,Nobs);
     X = mapeiainteiro_to_tuple(generated_integers,P,K);
     X = X';
-
-
-    Y = mapeiapermutacao([],X,1:PK,P,K);
-    % A permutacao trivial em X deve dar o pr�prio X
-    % Comentar este c�digo quando seguro de consist�ncia
-    assert( all( all( X==Y ) ) );
-
-    % THe -1 is necessary,since the first element is always zero.
-    estimated_joint_from_samples = estimate_marg_probs(generated_integers'-1,PK);
-
-    h_joint_from_samples = entropy_from_frequencies(estimated_joint_from_samples');
-
-    
-
-    % calculo tensor de probabilidades - AMERICA
-    idx=r*X;
+   
+    % calculo tensor de probabilidades - AMERICA  
     Px = single(zeros(1,PK));
     for t=1:Nobs
-        Px(idx(t)+1) = Px(idx(t)+1) + 1;
+        Px(generated_integers(t)) = Px(generated_integers(t)) + 1;
     end
 
     Px=Px/Nobs;
 
     h_joint=-sum(Px(Px>0).*log2(Px(Px>0)));
-
-    % a toler�ncia aqui � de 0.2
-    assert( h_joint <= h_joint_from_samples + 0.2);
-    assert( h_joint >= h_joint_from_samples - 0.2);
-%                disp('h_joint - h_joint_from_samples');
-%                disp(h_joint - h_joint_from_samples);
     
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%%%% AMERICA ALGORITHM EVALUATION %%%%
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    if(algo_i == find(strcmp(algorithms_names,'america')))
-        
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%% AMERICA ALGORITHM EVALUATION %%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
+    start_time = tic;
+    [Wm] = america(Px,P,K,PK,Lex,r);
+    america_trial_time(idcase) = toc(start_time);
+
+    Y = produtomatrizGF(Wm,X,P,1,[]);
+
+    h_marg=entropy_from_frequencies(estimate_marg_probs(Y,P)');
+    h_marg = sum(h_marg(:));
+    america_total_corr_results(idcase) = h_marg-h_joint;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%% SA4ICA ALGORITHM EVALUATION %%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    start_time = tic;
+
+    % the decode_ function, makes a confusion with a pre-existing
+    % decode function. so I renamed it to decode_. It is part of sa4ica
+    [Wsa] = sa4ica_decode(Px,P,K,Lex,r,0.995,5);
+    sa4ica_trial_time(idcase) = toc(start_time);
+
+    Y = produtomatrizGF(Wsa,X,P,1,[]);
+    h_marg=entropy_from_frequencies(estimate_marg_probs(Y,P)');
+    h_marg = sum(h_marg(:));
+    sa4ica_total_corr_results(idcase) = h_marg-h_joint;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%  QICA ALGORITHM EVALUATION  %%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    start_time = tic;
+
+    [opt_est_vals,opt_appox_lin_min2,opt_appox_ent_with_appox_vals2,opt_perm,opt_v_vec]=QICA_function(K,P,Px',0,qica_min_k,qica_max_k,1000);
+    QICA_trial_time(idcase) = toc(start_time);
+
+    [Yqica,] = mapeiapermutacao(X, opt_perm,P,K);
+
+    h_marg=entropy_from_frequencies(estimate_marg_probs(Yqica,P)');
+    h_marg = sum(h_marg(:));
+
+    QICA_total_corr_results(idcase) = h_marg-h_joint;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%  Order Permutation ALGORITHM EVALUATION  %%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if(P==2)
         start_time = tic;
-        [Wm] = america(Px,P,K,PK,Lex,r);
-        trial_time(idcase) = toc(start_time);
 
-        Y = produtomatrizGF(Wm,X,P,1,[]);
-    %                Y_possible_tuples_america = produtomatrizGF(U_america,all_possible_tuples,P,1,[])
+        [Yorder, opt_perm] = order_perm_function(Px,X,P,K);
 
-        % estimate_marg_probs(Y,P)' must be alike with 'the_pmfs'
+        order_trial_time(idcase) = toc(start_time);
 
-        h_marg=entropy_from_frequencies(estimate_marg_probs(Y,P)');
-        h_marg = sum(h_marg(:));
-        total_corr_results(idcase) = h_marg-h_joint;
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%%%% SA4ICA ALGORITHM EVALUATION %%%%%
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    elseif(algo_i == find(strcmp(algorithms_names,'sa4ica')))
-
-        start_time = tic;
-
-        % the decode_ function, makes a confusion with a pre-existing
-        % decode function. so I renamed it to decode_. It is part of sa4ica
-        [Wsa] = sa4ica_decode(Px,P,K,Lex,r,0.995,5);
-        trial_time(idcase) = toc(start_time);
-
-        Y = produtomatrizGF(Wsa,X,P,1,[]);
-    %                Y_possible_tuples_sa4ica = produtomatrizGF(Usa4ica,all_possible_tuples,P,1,[])
-        h_marg=entropy_from_frequencies(estimate_marg_probs(Y,P)');
-        h_marg = sum(h_marg(:));
-        total_corr_results(idcase) = h_marg-h_joint;
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%%%%  QICA ALGORITHM EVALUATION  %%%%%
-        %%%%% WE'VE SENT THIS TO EXPERIMENT 2 %
-        %%%%%        WHICH IS PURE ICA     %%%%
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    elseif(algo_i == find(strcmp(algorithms_names,'QICA')))
-
-        start_time = tic;
-
-        [opt_est_vals,opt_appox_lin_min2,opt_appox_ent_with_appox_vals2,opt_perm,opt_v_vec]=QICA_function(K,P,Px',0,qica_min_k,qica_max_k,1000);
-
-        trial_time(idcase) = toc(start_time);
-
-        [Yqica,] = mapeiapermutacao([], X, opt_perm,P,K);
-
-        h_marg=entropy_from_frequencies(estimate_marg_probs(Yqica,P)');
+        h_marg=entropy_from_frequencies(estimate_marg_probs(Yorder,P)');
         h_marg = sum(h_marg(:));
 
-        total_corr_results(idcase) = h_marg-h_joint;
-
-     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     %%%%%  Order Permutation ALGORITHM EVALUATION  %%%%%
-     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    elseif(algo_i == find(strcmp(algorithms_names,'order')))
-        if(P==2)
-            start_time = tic;
-
-            [Yorder, opt_perm] = order_perm_function(Px,X,P,K);
-
-            trial_time(idcase) = toc(start_time);
-
-            h_marg=entropy_from_frequencies(estimate_marg_probs(Yorder,P)');
-            h_marg = sum(h_marg(:));
-
-            total_corr_results(idcase) = h_marg-h_joint;
-        else
-            trial_time(idcase) = NaN;
-            total_corr_results(idcase) = NaN;
-        end
+        order_total_corr_results(idcase) = h_marg-h_joint;
+    else
+        order_trial_time(idcase) = NaN;
+        order_total_corr_results(idcase) = NaN;
+    end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%  GLICA ALGORITHM EVALUATION  %%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    elseif(algo_i == find(strcmp(algorithms_names,'GLICA')))
+    start_time = tic;
+    [Wglica] = GLICA_function(X,P,K);
+    GLICA_trial_time(idcase) = toc(start_time);
 
-        start_time = tic;
-        [Wglica] = GLICA_function(X,P,K);
-        trial_time(idcase) = toc(start_time);
+    Y = produtomatrizGF(Wglica,X,P,1,[]);
+    h_marg=entropy_from_frequencies(estimate_marg_probs(Y,P)');
+    h_marg = sum(h_marg(:));
+    GLICA_total_corr_results(idcase) = h_marg-h_joint;
 
-        Y = produtomatrizGF(Wglica,X,P,1,[]);
-        h_marg=entropy_from_frequencies(estimate_marg_probs(Y,P)');
-        h_marg = sum(h_marg(:));
-        total_corr_results(idcase) = h_marg-h_joint;
-    end
 
 end
 toc(total_time)
 
-trial_time = reshape(trial_time,space);
-total_corr_results = reshape(total_corr_results,space);
-mean_trial_time = mean(trial_time, 5);
-mean_total_corr_results = mean(total_corr_results, 5);
+
+
+[america_mean_trial_time, america_trial_time] = summary_statistics(america_trial_time,space, sig_digits);
+[america_mean_total_corr_results, america_total_corr_results] = summary_statistics(america_total_corr_results,space, sig_digits);
+
+[sa4ica_mean_trial_time, sa4ica_trial_time] = summary_statistics(sa4ica_trial_time,space, sig_digits);
+[sa4ica_mean_total_corr_results, sa4ica_total_corr_results] = summary_statistics(sa4ica_total_corr_results,space, sig_digits);
+
+[QICA_mean_trial_time, QICA_trial_time] = summary_statistics(QICA_trial_time,space, sig_digits);
+[QICA_mean_total_corr_results, QICA_total_corr_results] = summary_statistics(QICA_total_corr_results,space, sig_digits);
+
+[GLICA_mean_trial_time, GLICA_trial_time] = summary_statistics(GLICA_trial_time,space, sig_digits);
+[GLICA_mean_total_corr_results, GLICA_total_corr_results] = summary_statistics(GLICA_total_corr_results,space, sig_digits);
+
+[order_mean_trial_time, order_trial_time] = summary_statistics(order_trial_time,space, sig_digits);
+[order_mean_total_corr_results, order_total_corr_results] = summary_statistics(order_total_corr_results,space, sig_digits);
 
 
 % saves with the date (day/month/year) and the hour: hh:mm

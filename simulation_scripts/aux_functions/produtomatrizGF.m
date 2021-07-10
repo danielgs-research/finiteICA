@@ -22,5 +22,4 @@ function [C] = produtomatrizGF(A,B,q,m,field) %#codegen
         end
         C(C==-Inf) = -1;
     end
-
 end

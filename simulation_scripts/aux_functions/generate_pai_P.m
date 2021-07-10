@@ -1,8 +1,8 @@
 function [pai]=generate_pai_P(n,P)
-    counter=zeros(1,n);
+    counter=single(zeros(1,n));
     %pai=counter;
     number_of_words=P^n;
-    pai=zeros(number_of_words,n);
+    pai=single(zeros(number_of_words,n));
     for m=1:number_of_words
         pai(m,:)=counter;
         counter=add_to_counter(counter,P-1);
