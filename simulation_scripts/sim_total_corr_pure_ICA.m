@@ -1,8 +1,8 @@
 clear;
 close all;
 
-some_primes = [3];
-n_sources = [2 4 6];
+some_primes = [5];
+n_sources = [2 3 4];
 n_samples = 10.^(2:6);
 n_trials = 50;
 qica_min_k = 2;
