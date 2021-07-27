@@ -21,7 +21,7 @@ function W = GLICA_function(X,P,K)
     %america does in this order and uses Lex to reference this elements
     % flipud(vT_matrix)
 
-
+    
 	U = produtomatrizGF(vT_matrix , X,P,1,[]);
 
     marg_probs = estimate_marg_probs(U,P)';

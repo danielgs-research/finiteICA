@@ -5,8 +5,9 @@ load('sim_data_start_2021_07_09_15:48_end_2021_07_09_15:54_sim_total_corr_pure_I
 
 lines = length(n_sources);
 columns = length(distributions_names);
-% x = log10(n_samples);
 x = n_samples;
+linewidth = 1.5;
+markersize = 1;
 
 figure();
 for it_lines=1:lines
@@ -17,10 +18,17 @@ for it_lines=1:lines
         data_sa4ica = reshape(sa4ica_mean_total_corr_results(it_columns,:,it_lines,:),1,length(n_samples));   
         data_order = reshape(order_mean_total_corr_results(it_columns,:,it_lines,:),1,length(n_samples));
         pl = subplot(lines, columns,(it_lines-1)*columns + it_columns);
-        semilogx(x, data_america, '-*', x, data_sa4ica, '--o', ...
-                x, data_GLICA, ':d', x, data_QICA, '-.s', x, data_order, '-x');
-        legend('america','sa4ica','GLICA','QICA','order');
-        title(sprintf('%s - K=%d', string(distributions_names(it_columns)),n_sources(it_lines)));
+        semilogx(x, data_america, '-*', 'LineWidth', linewidth, ...
+                x, data_sa4ica, '--o', 'LineWidth', linewidth, ...
+                x, data_GLICA, ':d', 'LineWidth', linewidth, ... 
+                x, data_QICA, '-.s', 'LineWidth', linewidth, ...
+                x, data_order, '-x', 'LineWidth', linewidth);
+        legend('america','sa4ica','GLICA','QICA','order');        
+        if(it_lines==1)
+            title(sprintf('%s\nK=%d', distributions_names{it_columns},n_sources(it_lines)));
+        else
+            title(sprintf('K=%d', n_sources(it_lines)));
+        end
 %         xlabel('log_{10}(T)');
         xlabel('T');
         ylabel('Total Correlation [bits]');

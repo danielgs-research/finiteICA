@@ -1,23 +1,23 @@
 clear;
 close all;
 
-some_primes = [5];
-n_sources = [2 3 4];
-n_samples = 10.^(2:6);
-n_trials = 50;
+some_primes = [2];
+n_sources = [8];
+n_samples = 10.^(6);
+n_trials = 1;
 qica_min_k = 2;
 qica_max_k = 10;
 sig_digits = 4;
 
 addpath('aux_functions/');
-if isempty(gcp('nocreate')) %MATLAB
-    parpool(10);
-end
+% if isempty(gcp('nocreate')) %MATLAB
+%     parpool(10);
+% end
 sim_start_time = datetime(); %MATLAB
-%sim_start_time = localtime(time()); %OCTAVE
 
 % Must be a cel array, so we can do a strfind...
-algorithms_names = {'america';'sa4ica';'QICA';'GLICA';'order'};
+% algorithms_names = {'america';'sa4ica';'QICA';'GLICA';'order'};
+algorithms_names = {'GLICA'};
 n_algorithms = length(algorithms_names);
 the_algorithms = 1:n_algorithms;
 
@@ -48,7 +48,7 @@ order_total_corr_results = zeros(n_cases,1);
 total_time = tic;
 % s = RandStream('mt19937ar','Seed',trial_i);
 
-parfor idcase = 1:n_cases    
+for idcase = 1:n_cases    
     [dist_i, p_i, k_i, t_i, trial_i] = ind2sub(space,idcase);
     P = some_primes(p_i);
     K = n_sources(k_i);
@@ -197,10 +197,8 @@ toc(total_time)
 
 % saves with the date (day/month/year) and the hour: hh:mm
 % start and ending times
-% start_time_str = strftime('sim_data_start_%d_%m_%Y_%H_%M',sim_start_time);%OCTAVE
-% saved_sim_str = strftime('_end_%d_%m_%Y_%H_%M_sim_total_corr_pure_ICA',localtime(time()));%OCTAVE
 start_time_str = 'sim_data_start_' + string(sim_start_time,'yyyy_MM_dd_HH:mm'); %MATLAB
 saved_sim_str = '_end_' + string(datetime(),'yyyy_MM_dd_HH:mm') + '_sim_total_corr_pure_ICA';%MATLAB
 
 saved_sim = sprintf('sim_data/%s%s',start_time_str,saved_sim_str);
-save(saved_sim)
+% save(saved_sim)
