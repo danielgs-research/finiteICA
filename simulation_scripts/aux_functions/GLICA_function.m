@@ -9,27 +9,27 @@ function W = GLICA_function(X,P,K)
 	% X is the observations matrix. which is K x Nobs
 	% output: the separation matrix W
 
-	% Nothing is said about Lex in Painsky's work
-	% Lex = param.Lex;
-
-
-	eqepes = 1e-9;
-
-
-	vT_matrix = generate_pai_P(K,P);
-
-    %america does in this order and uses Lex to reference this elements
-    % flipud(vT_matrix)
+    PK = P^K;
+    vT_matrix = mapeiainteiro_to_tuple(PK:-1:1,P,K);
+    U_entropies = zeros(1,PK);
+    
+    for it=1:PK-1
+        u = produtomatrizGF(vT_matrix(it,:),X,P,1,[]);        
+        marg_prob = estimate_marg_probs(u,P)';
+        U_entropies(it) = entropy_from_frequencies(marg_prob)';        
+    end
+    U_entropies(end) = NaN;
+    [~, U_entropies_sorted_index] = sort(U_entropies);
 
     
-	U = produtomatrizGF(vT_matrix , X,P,1,[]);
-
-    marg_probs = estimate_marg_probs(U,P)';
-    U_entropies = entropy_from_frequencies(marg_probs)';
-    U_entropies(end) = NaN;
-
-
-    [U_entropies_sorted U_entropies_sorted_index] = sort(U_entropies);
+% 	U = produtomatrizGF(vT_matrix , X,P,1,[]);
+% 
+%     marg_probs = estimate_marg_probs(U,P)';
+%     U_entropies = entropy_from_frequencies(marg_probs)';
+%     U_entropies(end) = NaN;
+% 
+% 
+%     [~, U_entropies_sorted_index] = sort(U_entropies);
 
 
     index_entropy = 1;

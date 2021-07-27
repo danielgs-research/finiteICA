@@ -1,8 +1,8 @@
 clear;
 close all;
 
-some_primes = [2];
-n_sources = [8];
+some_primes = [5];
+n_sources = [6];
 n_samples = 10.^(6);
 n_trials = 1;
 qica_min_k = 2;
@@ -16,15 +16,12 @@ addpath('aux_functions/');
 sim_start_time = datetime(); %MATLAB
 
 % Must be a cel array, so we can do a strfind...
-% algorithms_names = {'america';'sa4ica';'QICA';'GLICA';'order'};
-algorithms_names = {'GLICA'};
+algorithms_names = {'america';'sa4ica';'QICA';'GLICA';'order'};
 n_algorithms = length(algorithms_names);
 the_algorithms = 1:n_algorithms;
 
-% distributions_names = {'Zipf';'Binomial p=0.2';'Binomial p=0.5';'Random'};
 distributions_names = {'Zipf', 'Binomial p=0.2', 'Random'};
 the_distributions = 1:length(distributions_names);
-
 
 space = [length(distributions_names), length(some_primes), length(n_sources), length(n_samples), n_trials];
 
