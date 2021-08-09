@@ -32,6 +32,8 @@ figure();
 for it_columns=1:columns    
     pl = subplot(1, columns, it_columns);    
     bar(x, log10([data_america(:,it_columns), data_sa4ica(:,it_columns), data_GLICA(:,it_columns), data_QICA(:,it_columns)]),'hist');        
+%     bar(x, [data_america(:,it_columns), data_sa4ica(:,it_columns), data_GLICA(:,it_columns), data_QICA(:,it_columns)],'hist', 'barwidth', 1, 'basevalue', .1);
+%     set(gca, 'YScale', 'log');
     if(it_columns==1)
         legend('america','sa4ica','GLICA','QICA','location','northwest');         
     end

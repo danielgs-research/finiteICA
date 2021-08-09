@@ -2,8 +2,10 @@ clear;
 close all;
 addpath('sim_data/');
 % load('sim_data_start_2021_07_10_12:29_end_2021_07_12_15:57_sim_total_corr_pure_ICA.mat');%P=5
-load('sim_data_start_2021_07_09_22:13_end_2021_07_10_12:25_sim_total_corr_pure_ICA.mat');%P=3
-% load('sim_data_start_2021_07_09_15:48_end_2021_07_09_15:54_sim_total_corr_pure_ICA.mat');%P=2
+% load('sim_data_start_2021_07_09_22:13_end_2021_07_10_12:25_sim_total_corr_pure_ICA.mat');%P=3
+% load('sim_data_start_2021_08_06_00:03_end_2021_08_06_01:05_sim_total_corr_pure_ICA.mat');%P=2
+load('sim_data_start_2021_08_06_12:41_end_2021_08_06_21:27_sim_total_corr_pure_ICA.mat');%P=2
+
 
 lines = length(n_sources);
 columns = length(distributions_names);

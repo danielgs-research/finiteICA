@@ -2,17 +2,17 @@ clear;
 close all;
 
 some_primes = [5];
-n_sources = [6];
-n_samples = 10.^(6);
-n_trials = 1;
+n_sources = [2 3 4];
+n_samples = 10.^(2:6);
+n_trials = 50;
 qica_min_k = 2;
 qica_max_k = 10;
 sig_digits = 4;
 
 addpath('aux_functions/');
-% if isempty(gcp('nocreate')) %MATLAB
-%     parpool(10);
-% end
+if isempty(gcp('nocreate')) %MATLAB
+    parpool(12);
+end
 sim_start_time = datetime(); %MATLAB
 
 % Must be a cel array, so we can do a strfind...
@@ -45,7 +45,7 @@ order_total_corr_results = zeros(n_cases,1);
 total_time = tic;
 % s = RandStream('mt19937ar','Seed',trial_i);
 
-for idcase = 1:n_cases    
+parfor idcase = 1:n_cases    
     [dist_i, p_i, k_i, t_i, trial_i] = ind2sub(space,idcase);
     P = some_primes(p_i);
     K = n_sources(k_i);
@@ -67,22 +67,22 @@ for idcase = 1:n_cases
 
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+    generated_integers = [];
     if(dist_i == find(strcmp(distributions_names,'Zipf')))
         %First we are going Zipf like Painsky's code
         %Zipf distribution
-        s=1.05; %zipf distribution parameter
-        zipf_p=[1:1:PK];
-        zipf_p=1./(zipf_p.^s);
-        zipf_p=zipf_p'/sum(zipf_p);
+        s = 1.05; %zipf distribution parameter
+        zipf_p = 1:1:PK;
+        zipf_p = 1./(zipf_p.^s);
+        zipf_p = zipf_p'/sum(zipf_p);
         joint_pmf  = zipf_p';
         generated_integers = gerainteiros_from_probs(joint_pmf,P,K,Nobs);
     elseif(dist_i == find(strcmp(distributions_names,'Binomial p=0.2')))
         generated_integers = binornd(PK-1,.2,Nobs,1)+1;
-    elseif(dist_i == find(strcmp(distributions_names,'Binomial p=0.5')))
-        generated_integers = binornd(PK-1,.5,Nobs,1)+1;
+    elseif(dist_i == find(strcmp(distributions_names,'Binomial p=0.4')))
+        generated_integers = binornd(PK-1,.4,Nobs,1)+1;
     elseif(dist_i == find(strcmp(distributions_names,'Random')))
-        joint_pmf  = single(generate_random_pmf(PK)');
+        joint_pmf = single(generate_random_pmf(PK)');
         generated_integers = gerainteiros_from_probs(joint_pmf,P,K,Nobs);
     end
 
@@ -115,10 +115,7 @@ for idcase = 1:n_cases
     %%%%% SA4ICA ALGORITHM EVALUATION %%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     start_time = tic;
-
-    % the decode_ function, makes a confusion with a pre-existing
-    % decode function. so I renamed it to decode_. It is part of sa4ica
-    [Wsa] = sa4ica_decode(Px,P,K,Lex,r,0.995,5);
+    [Wsa,~] = sa4ica(X,P,1,[],.9,2);
     sa4ica_trial_time(idcase) = toc(start_time);
 
     Y = produtomatrizGF(Wsa,X,P,1,[]);
@@ -170,7 +167,7 @@ for idcase = 1:n_cases
     h_marg = sum(h_marg(:));
     GLICA_total_corr_results(idcase) = h_marg-h_joint;
 
-
+    fprintf('Case %d completed\n', idcase);
 end
 toc(total_time)
 
@@ -198,4 +195,4 @@ start_time_str = 'sim_data_start_' + string(sim_start_time,'yyyy_MM_dd_HH:mm'); 
 saved_sim_str = '_end_' + string(datetime(),'yyyy_MM_dd_HH:mm') + '_sim_total_corr_pure_ICA';%MATLAB
 
 saved_sim = sprintf('sim_data/%s%s',start_time_str,saved_sim_str);
-% save(saved_sim)
+save(saved_sim)
