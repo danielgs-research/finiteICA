@@ -9,8 +9,6 @@ function [probs] = generate_random_pmf(Q)
     probs =rand(Q,1);
     sprob=sum(probs);
     probs=probs./sprob(ones(Q,1),:);
-
-
-       
+      
 
 end

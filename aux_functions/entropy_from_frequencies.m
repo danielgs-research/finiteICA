@@ -1,5 +1,5 @@
 function h = entropy_from_frequencies(ffq, log_base)
-	% FFQ must be already in frequency form, integer values are not count
+	% FFQ must be already in frequency form, integer values are not counted
 
 
 	% IMPORTANT: THE FREQUENCIES MUST BE COLUMN-WISE

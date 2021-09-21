@@ -38,14 +38,14 @@ while T>epsilon
         end
         V(i,j) = c;  %switch Xi by the combination Xi + c.Xj
         
-        Xnew = produtomatrizGF(V, X, q, m, field); %extract candidate sources
+        Xnew = product_GFmatrix(V, X, q, m, field); %extract candidate sources
         
         [hnew, count] = entrp(Xnew(i,:),q,m);  %cost function
         Nfits = Nfits + count;
         delta_H = hnew - h(i);
         %update candidate solution
         if(delta_H<0 || exp(-delta_H/T) > rand())                    
-            B = produtomatrizGF(V,B,q,m,field); %update solution
+            B = product_GFmatrix(V,B,q,m,field); %update solution
             X = Xnew;
             h(i) = hnew;
         end       

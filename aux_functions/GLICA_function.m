@@ -1,7 +1,5 @@
-function W = GLICA_function(X,P,K)
-	% this fuction seems really closer to america
-	% and was created by Painsky et.al
-	% We'll do an implementation accordingly to
+function W = GLICA_function(X,P,K)	
+	% An implementation accordingly to
 	% the original paper:
 	% "Linear Independent Component Analysis over
 	% Finite Fields: Algorithms and Bounds"
@@ -10,11 +8,11 @@ function W = GLICA_function(X,P,K)
 	% output: the separation matrix W
 
     PK = P^K;
-    vT_matrix = mapeiainteiro_to_tuple(PK:-1:1,P,K);
+    vT_matrix = int_to_tuple(PK:-1:1,P,K);
     U_entropies = zeros(1,PK);
     
     for it=1:PK-1
-        u = produtomatrizGF(vT_matrix(it,:),X,P,1,[]);        
+        u = product_GFmatrix(vT_matrix(it,:),X,P,1,[]);        
         marg_prob = estimate_marg_probs(u,P)';
         U_entropies(it) = entropy_from_frequencies(marg_prob)';        
     end
@@ -22,16 +20,6 @@ function W = GLICA_function(X,P,K)
     [~, U_entropies_sorted_index] = sort(U_entropies);
 
     
-% 	U = produtomatrizGF(vT_matrix , X,P,1,[]);
-% 
-%     marg_probs = estimate_marg_probs(U,P)';
-%     U_entropies = entropy_from_frequencies(marg_probs)';
-%     U_entropies(end) = NaN;
-% 
-% 
-%     [~, U_entropies_sorted_index] = sort(U_entropies);
-
-
     index_entropy = 1;
     W = [];
     k=1;
