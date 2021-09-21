@@ -222,4 +222,4 @@ start_time_str = 'sim_data_start_' + string(sim_start_time,'yyyy_MM_dd_HH:mm'); 
 saved_sim_str = '_end_' + string(datetime(),'yyyy_MM_dd_HH:mm') + '_sim_total_corr_pure_ICA';%MATLAB
 
 saved_sim = sprintf('sim_data/%s%s',start_time_str,saved_sim_str);
-% save(saved_sim)
+save(saved_sim)
