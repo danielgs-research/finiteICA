@@ -23,12 +23,7 @@ function [opt_est_vals,opt_appox_lin_min2,opt_appox_ent_with_appox_vals2,overall
 
 	    if exhaustive
 
-	        %exhustive algorithm:
-
-	        % I'm using the non_mex form
-	        % 25/04/2019
-	        % I'm wondering if the k^(P-1) here is correct for just k. Like BICA_function
-	        %
+	        %exhaustive algorithm:	        
 	        v = allVL1nonrecurs(k^(P-1), n); %we have n entropies to calculate, each one of them may fall in each of the k^(p-1) cells we defined.
 	        v=fliplr(v);
 
@@ -361,3 +356,31 @@ function [M]=assign_slopes(A,probs)
 
 
 end
+
+%%%%%%%%%%%
+
+function v = allVL1nonrecurs(n, L1)
+% function v=allVL1eq(n, L1);
+% INPUT
+%    n: length of the vector
+%    L1: desired L1 norm
+% OUTPUT:
+%    if head is not defined
+%      v: (m x n) array such as sum(v,2)==L1
+%         all elements of v is naturel numbers {0,1,...}
+%         v contains all (=m) possible combinations
+%         v is (dictionnary) sorted
+% Algorithm:
+%    NonRecursive
+
+% Chose (n-1) the splitting points of the array [0:(n+L1)]
+s = nchoosek(1:n+L1-1,n-1);
+m = size(s,1);
+
+s1 = zeros(m,1,class(L1));
+s2 = (n+L1)+s1;
+
+v = diff([s1 s s2],1,2); % m x n
+v = v-1;
+
+end % allVL1nonrecurs

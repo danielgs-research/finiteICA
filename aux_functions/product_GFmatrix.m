@@ -1,4 +1,4 @@
-function [C] = produtomatrizGF(A,B,q,m,field) %#codegen
+function [C] = product_GFmatrix(A,B,q,m,field)
 	%auxiliary routine to perform matrix multiplication over GF(q^m)
 	%INPUT
 	%A, B: input matrices, defined over GF(q^m)

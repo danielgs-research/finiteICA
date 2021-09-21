@@ -5,42 +5,48 @@ addpath('sim_data/');
 
 
 
-load('sim_data_start_2021_08_06_08:19_end_2021_08_06_08:29_sim_total_corr_pure_ICA.mat');%P=2
-data_america(1,:) = america_mean_trial_time(:,1,2,end);   
-data_GLICA(1,:) = GLICA_mean_trial_time(:,1,2,end);   
-data_QICA(1,:) = QICA_mean_trial_time(:,1,2,end);   
-data_sa4ica(1,:) = sa4ica_mean_trial_time(:,1,2,end);   
 
-load('sim_data_start_2021_08_06_08:40_end_2021_08_06_09:03_sim_total_corr_pure_ICA.mat');%P=3
-data_america(2,:) = america_mean_trial_time(:,1,2,end);   
-data_GLICA(2,:) = GLICA_mean_trial_time(:,1,2,end);   
-data_QICA(2,:) = QICA_mean_trial_time(:,1,2,end);   
-data_sa4ica(2,:) = sa4ica_mean_trial_time(:,1,2,end);   
+load('sim_data_start_2021_08_31_09:29_end_2021_08_31_09:49_sim_total_corr_pure_ICA.mat');%P=2
+data_america(1,:) = median(america_trial_time(:,1,3,end,:),5);   
+data_GLICA(1,:) = GLICA_mean_trial_time(:,1,3,end);   
+data_QICA(1,:) = QICA_mean_trial_time(:,1,3,end);
+data_QICA_ex(1,:) = QICA_ex_mean_trial_time(:,1,3,end);
+data_sa4ica(1,:) = sa4ica_mean_trial_time(:,1,3,end);   
 
-load('sim_data_start_2021_08_06_12:41_end_2021_08_06_21:27_sim_total_corr_pure_ICA.mat');%P=5
-data_america(3,:) = america_mean_trial_time(:,1,end,end);   
-data_GLICA(3,:) = GLICA_mean_trial_time(:,1,end,end);   
-data_QICA(3,:) = QICA_mean_trial_time(:,1,end,end);   
-data_sa4ica(3,:) = sa4ica_mean_trial_time(:,1,end,end);   
+load('sim_data_start_2021_08_31_16:37_end_2021_08_31_20:27_sim_total_corr_pure_ICA.mat');%P=3
+data_america(2,:) = median(america_trial_time(:,1,3,end,:),5);   
+data_GLICA(2,:) = GLICA_mean_trial_time(:,1,3,end);   
+data_QICA(2,:) = QICA_mean_trial_time(:,1,3,end);   
+data_QICA_ex(2,:) = QICA_ex_mean_trial_time(:,1,3,end);
+data_sa4ica(2,:) = sa4ica_mean_trial_time(:,1,3,end);   
+
+load('sim_data_start_2021_09_01_09:50_end_2021_09_01_18:41_sim_total_corr_pure_ICA.mat');%P=5
+data_america(3,:) = america_mean_trial_time(:,1,3,end);   
+data_GLICA(3,:) = GLICA_mean_trial_time(:,1,3,end);   
+data_QICA(3,:) = QICA_mean_trial_time(:,1,3,end);   
+data_QICA_ex(3,:) = QICA_ex_mean_trial_time(:,1,3,end);
+data_sa4ica(3,:) = sa4ica_mean_trial_time(:,1,3,end);   
 
 columns = length(distributions_names);
 x = [2, 3, 5];
 linewidth = 1.5;
-markersize = 1;
 
 figure();
 for it_columns=1:columns    
     pl = subplot(1, columns, it_columns);    
-    bar(x, log10([data_america(:,it_columns), data_sa4ica(:,it_columns), data_GLICA(:,it_columns), data_QICA(:,it_columns)]),'hist');        
-%     bar(x, [data_america(:,it_columns), data_sa4ica(:,it_columns), data_GLICA(:,it_columns), data_QICA(:,it_columns)],'hist', 'barwidth', 1, 'basevalue', .1);
-%     set(gca, 'YScale', 'log');
+    semilogy(x, data_america(:,it_columns), '-*', ...
+                x, data_sa4ica(:,it_columns), '--o', ...
+                x, data_GLICA(:,it_columns), ':d', ... 
+                x, data_QICA(:,it_columns), '-.s', ...                
+                x, data_QICA_ex(:,it_columns), '-.^', ...                
+                'LineWidth', linewidth);
     if(it_columns==1)
-        legend('america','sa4ica','GLICA','QICA','location','northwest');         
+        legend('america','sa4ica','GLICA','QICA','QICA-Exhaustive','location','northwest');         
     end
     title(distributions_names{it_columns});
     grid on;
     xlabel('P');
     if(it_columns==1)
-        ylabel(sprintf('Runtime [log_{10}(s)]\nK=%d, T=10^{%d}',n_sources(end), log10(n_samples(end))));
+        ylabel(sprintf('Median Runtime [s]\nK=%d, T=10^{%d}',n_sources(3), log10(n_samples(end))));
     end
 end

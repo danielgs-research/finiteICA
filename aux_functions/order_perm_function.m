@@ -5,6 +5,6 @@ function [Y, opt_perm] = order_perm_function(Px,X,P,K)
 
 [~, opt_perm] = sort(Px);
 
-[Y,] = mapeiapermutacao(X, opt_perm,P,K);
+[Y,] = map_permutation(X, opt_perm,P,K);
 
 end  % function
