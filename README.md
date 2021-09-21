@@ -1,6 +1,5 @@
-# finiteICA
+# ICA over finite alphabets comparison
 
-### 31/07/2020
-
-### Continuation of the work done before in bss_time_total_corr_sims_19_04_2019
-### Here we'll do an up-to-date organization of the files and simulations
+## This repository contains the code and data of the paper "A Comparative Analysis of Methods for ICA over Finite Alphabets", under review for publication.
+### Authors: Daniel G. Silva, Romis Attux, Denis G. Fantinato, Mateus M. da Rosa
+### Main file: sim_total_corr_pure_ica.m
