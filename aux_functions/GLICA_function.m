@@ -8,7 +8,7 @@ function W = GLICA_function(X,P,K)
 	% output: the separation matrix W
 
     PK = P^K;
-    vT_matrix = int_to_tuple(PK:-1:1,P,K);
+    vT_matrix = single(dec2base(PK-1:-1:0,P,K) - 48);
     U_entropies = zeros(1,PK);
     
     for it=1:PK-1

@@ -1,10 +1,10 @@
 clear;
 close all;
 
-some_primes = [2];
-n_sources = 2:8;
+some_primes = [5];
+n_sources = 2:5;
 n_samples = 10.^(2:6);
-n_trials = 50;
+n_trials = 100;
 qica_min_k = 4; %QICA parameter
 qica_max_k = 8; %QICA parameter
 I = 100; %QICA parameter
@@ -15,15 +15,15 @@ sig_digits = 5;
 
 addpath('aux_functions/');
 if isempty(gcp('nocreate')) 
-    parpool(8);
+    parpool(10);
 end
 sim_start_time = datetime();
 
-algorithms_names = {'america';'sa4ica';'QICA';'QICA_exhaustive';'GLICA';'order'};
+algorithms_names = {'america/GLICA';'sa4ica';'QICA';'QICA_exhaustive';'order'};
 n_algorithms = length(algorithms_names);
 the_algorithms = 1:n_algorithms;
 
-distributions_names = {'Zipf', 'Binomial p=0.2', 'Random'};
+distributions_names = {'Zipf', 'Binomial', 'Random'};
 the_distributions = 1:length(distributions_names);
 
 space = [length(distributions_names), length(some_primes), length(n_sources), length(n_samples), n_trials];
@@ -41,9 +41,6 @@ QICA_total_corr_results = zeros(n_cases,1);
 
 QICA_ex_trial_time = zeros(n_cases,1);
 QICA_ex_total_corr_results = zeros(n_cases,1);
-
-GLICA_trial_time = zeros(n_cases,1);
-GLICA_total_corr_results = zeros(n_cases,1);
 
 order_trial_time = zeros(n_cases,1);
 order_total_corr_results = zeros(n_cases,1);
@@ -81,34 +78,33 @@ parfor idcase = 1:n_cases
         zipf_p = zipf_p'/sum(zipf_p);
         joint_pmf  = zipf_p';
         generated_integers = generate_from_probs(joint_pmf,P,K,Nobs);
-    elseif(dist_i == find(strcmp(distributions_names,'Binomial p=0.2')))
-        generated_integers = binornd(PK-1,.2,Nobs,1)+1; %Binomial
-    elseif(dist_i == find(strcmp(distributions_names,'Binomial p=0.4')))
-        generated_integers = binornd(PK-1,.4,Nobs,1)+1;
+    elseif(dist_i == find(strcmp(distributions_names,'Binomial')))
+        psuccess = rand()*(0.5-0.2)+0.2; %random prob. in (0.2, 0.5)
+        generated_integers = binornd(PK-1,psuccess,Nobs,1)+1; %Binomial
     elseif(dist_i == find(strcmp(distributions_names,'Random')))
         joint_pmf = single(generate_random_pmf(PK)'); %Random pmf
         generated_integers = generate_from_probs(joint_pmf,P,K,Nobs);
     end
 
     X = int_to_tuple(generated_integers,P,K);
-    X = X';
    
-    %% Probability tensor calculation for AMERICA algorithm
+    %% Probability tensor calculation for AMERICA and QICA algorithms
     Px = single(zeros(1,PK));
+    ixt = r*X;
     for t=1:Nobs
-        Px(generated_integers(t)) = Px(generated_integers(t)) + 1;
+        Px(ixt(t)+1) = Px(ixt(t)+1) + 1;
     end
-
     Px=Px/Nobs;
     %% Algorithms' execution
 
     h_joint=-sum(Px(Px>0).*log2(Px(Px>0))); %joint entropy of random vector X
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%% AMERICA ALGORITHM EVALUATION %%%%
+    %%%%% AMERICA/GLICA ALGORITHM EVALUATION %%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
     start_time = tic;
     [Wm] = america(Px,P,K,PK,Lex,r);
+      
     america_trial_time(idcase) = toc(start_time);
 
     Y = product_GFmatrix(Wm,X,P,1,[]);
@@ -179,41 +175,26 @@ parfor idcase = 1:n_cases
         order_total_corr_results(idcase) = NaN;
     end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%%  GLICA ALGORITHM EVALUATION  %%%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    start_time = tic;
-    [Wglica] = GLICA_function(X,P,K);
-    GLICA_trial_time(idcase) = toc(start_time);
-
-    Y = product_GFmatrix(Wglica,X,P,1,[]);
-    h_marg=entropy_from_frequencies(estimate_marg_probs(Y,P)');
-    h_marg = sum(h_marg(:));
-    GLICA_total_corr_results(idcase) = h_marg-h_joint;
-
     fprintf('Case %d completed\n', idcase);
 end
 toc(total_time)
 
 
 
-[america_mean_trial_time, america_trial_time] = summary_statistics(america_trial_time,space, sig_digits);
-[america_mean_total_corr_results, america_total_corr_results] = summary_statistics(america_total_corr_results,space, sig_digits);
+[america_std_trial_time, america_mean_trial_time, america_trial_time] = summary_statistics(america_trial_time,space, sig_digits);
+[america_std_total_corr_results, america_mean_total_corr_results, america_total_corr_results] = summary_statistics(america_total_corr_results,space, sig_digits);
 
-[sa4ica_mean_trial_time, sa4ica_trial_time] = summary_statistics(sa4ica_trial_time,space, sig_digits);
-[sa4ica_mean_total_corr_results, sa4ica_total_corr_results] = summary_statistics(sa4ica_total_corr_results,space, sig_digits);
+[sa4ica_std_trial_time, sa4ica_mean_trial_time, sa4ica_trial_time] = summary_statistics(sa4ica_trial_time,space, sig_digits);
+[sa4ica_std_total_corr_results, sa4ica_mean_total_corr_results, sa4ica_total_corr_results] = summary_statistics(sa4ica_total_corr_results,space, sig_digits);
 
-[QICA_mean_trial_time, QICA_trial_time] = summary_statistics(QICA_trial_time,space, sig_digits);
-[QICA_mean_total_corr_results, QICA_total_corr_results] = summary_statistics(QICA_total_corr_results,space, sig_digits);
+[QICA_std_trial_time, QICA_mean_trial_time, QICA_trial_time] = summary_statistics(QICA_trial_time,space, sig_digits);
+[QICA_std_total_corr_results, QICA_mean_total_corr_results, QICA_total_corr_results] = summary_statistics(QICA_total_corr_results,space, sig_digits);
 
-[QICA_ex_mean_trial_time, QICA_ex_trial_time] = summary_statistics(QICA_ex_trial_time,space, sig_digits);
-[QICA_ex_mean_total_corr_results, QICA_ex_total_corr_results] = summary_statistics(QICA_ex_total_corr_results,space, sig_digits);
+[QICA_ex_std_trial_time, QICA_ex_mean_trial_time, QICA_ex_trial_time] = summary_statistics(QICA_ex_trial_time,space, sig_digits);
+[QICA_ex_std_total_corr_results, QICA_ex_mean_total_corr_results, QICA_ex_total_corr_results] = summary_statistics(QICA_ex_total_corr_results,space, sig_digits);
 
-[GLICA_mean_trial_time, GLICA_trial_time] = summary_statistics(GLICA_trial_time,space, sig_digits);
-[GLICA_mean_total_corr_results, GLICA_total_corr_results] = summary_statistics(GLICA_total_corr_results,space, sig_digits);
-
-[order_mean_trial_time, order_trial_time] = summary_statistics(order_trial_time,space, sig_digits);
-[order_mean_total_corr_results, order_total_corr_results] = summary_statistics(order_total_corr_results,space, sig_digits);
+[order_std_trial_time, order_mean_trial_time, order_trial_time] = summary_statistics(order_trial_time,space, sig_digits);
+[order_std_total_corr_results, order_mean_total_corr_results, order_total_corr_results] = summary_statistics(order_total_corr_results,space, sig_digits);
 
 
 % saves with the date (day/month/year) and the hour: hh:mm

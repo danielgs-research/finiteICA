@@ -5,10 +5,10 @@ function [Y] = map_permutation(X, permut,q,K)
     % K is the input dimensionality
 
     % The line below creates an array like this:
-    % [q^(K-1) q^(K-2) ... q^2 q^1 1]
+    % [q^1 q^2 ... q^(K-2) q^(K-1)]
     % example for q=2 and K = 5
-    % 16 8 4 2 1
-    base = single(q.^(K-1:-1:0));
-    Y = permut(base*single(X)+1)-1;
-    Y = single((dec2base(Y,q,K)-48)');
+    % 1 2 4 8 16
+    base = single(q.^(0:K-1)); 
+    Y = permut(base*single(X)+1); 
+    Y = int_to_tuple(Y,q,K);
 end
